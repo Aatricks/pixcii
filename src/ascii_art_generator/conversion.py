@@ -6,6 +6,17 @@ from PIL import Image, ImageDraw, ImageEnhance, ImageFont
 
 ASCII_CHARS = " .-=+*x#$&X@"
 
+def get_character_ratio():
+    font_size = 10
+    try:
+        font = ImageFont.truetype("arial.ttf", font_size)
+    except IOError:
+        font = ImageFont.load_default()
+    bbox = font.getbbox("A")
+    char_width = bbox[2] - bbox[0]
+    char_height = bbox[3] - bbox[1]
+    return char_height / char_width
+
 def load_image(path):
     """Load an image from a file path."""
     image = Image.open(path)

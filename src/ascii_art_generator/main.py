@@ -28,11 +28,6 @@ def main():
     args = parser.parse_args()
 
     import os
-    # Fix for PowerShell argument parsing where .\path becomes .path
-    if args.input_path.startswith('.') and not args.input_path.startswith('.\\') and not args.input_path.startswith('./'):
-        args.input_path = '.\\' + args.input_path[1:]
-    if args.output_path and args.output_path.startswith('.') and not args.output_path.startswith('.\\') and not args.output_path.startswith('./'):
-        args.output_path = '.\\' + args.output_path[1:]
 
     args.input_path = os.path.abspath(args.input_path)
     if args.output_path:
@@ -54,7 +49,7 @@ def main():
         conversion.print_ascii_art(resized_image, args.edge_threshold, args.retro, args.bw, args.gamma)
     else:
         # Image output
-        resized_image = conversion.resize_image(image, args.width, 1.0)
+        resized_image = conversion.resize_image(image, args.width, conversion.get_character_ratio())
         ascii_chars = conversion.image_to_ascii_chars(resized_image)
 
         if args.minimalistic:
