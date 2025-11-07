@@ -22,7 +22,7 @@ A command-line tool to convert images into colorized ASCII art.
     ```
 
 
-![A Demo Image](./test.png)
+![A Demo Image](./HomeImage.png)
 
 
 ## Usage
