@@ -17,10 +17,7 @@ class TestMinimalistic(unittest.TestCase):
         mask = minimalistic.create_background_mask(self.test_image)
         self.assertEqual(mask.mode, "L")
 
-    def test_emphasize_edges(self):
-        mask = minimalistic.create_background_mask(self.test_image)
-        edges = minimalistic.emphasize_edges(self.test_image, mask)
-        self.assertEqual(edges.mode, "L")
+
 
 if __name__ == "__main__":
     unittest.main()

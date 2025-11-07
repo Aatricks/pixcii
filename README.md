@@ -21,6 +21,10 @@ A command-line tool to convert images into colorized ASCII art.
     pip install -e .
     ```
 
+
+![A Demo Image](./HomeImage.png)
+
+
 ## Usage
 
 ### Standard Conversion

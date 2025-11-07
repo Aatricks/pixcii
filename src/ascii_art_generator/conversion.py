@@ -1,10 +1,19 @@
 import colorsys
 
-import cv2
-import numpy as np
 from PIL import Image, ImageDraw, ImageEnhance, ImageFont
 
 ASCII_CHARS = " .-=+*x#$&X@"
+
+def get_character_ratio():
+    font_size = 10
+    try:
+        font = ImageFont.truetype("arial.ttf", font_size)
+    except IOError:
+        font = ImageFont.load_default()
+    bbox = font.getbbox("A")
+    char_width = bbox[2] - bbox[0]
+    char_height = bbox[3] - bbox[1]
+    return char_height / char_width
 
 def load_image(path):
     """Load an image from a file path."""
@@ -41,7 +50,6 @@ def get_pixel_color(pixel, use_bw=False, gamma=1.0):
             r = int(((pixel[0] / 255) ** 1.0) * 255)
             g = int(((pixel[1] / 255) ** 1.0) * 255)
             b = int(((pixel[2] / 255) ** 1.0) * 255)
-            gray_val = (0.299 * pixel[0] + 0.587 * pixel[1] + 0.114 * pixel[2]) / 255
             return (r, g, b)
         else:
             return (pixel[0], pixel[0], pixel[0])
@@ -71,8 +79,8 @@ def image_to_ascii_chars(image):
             chars.append(ASCII_CHARS[min(index, len(ASCII_CHARS)-1)])
     return ''.join(chars)
 
-def draw_ascii_art(image, ascii_chars, background_mask=None, edge_mask=None, edge_threshold=4.0, use_retro=False, use_bw=False, gamma=1.0):
-    """Draw the ASCII art on a new image canvas with color and edge logic."""
+def draw_ascii_art(image, ascii_chars, background_mask=None, use_retro=False, use_bw=False, gamma=1.0):
+    """Draw the ASCII art on a new image canvas with color."""
     width, height = image.size
     font_size = 10
     try:
@@ -94,19 +102,7 @@ def draw_ascii_art(image, ascii_chars, background_mask=None, edge_mask=None, edg
     if background_mask:
         background_pixels = background_mask.getdata()
 
-    edge_pixels = None
-    if edge_mask:
-        edge_pixels = edge_mask.getdata()
 
-    # Compute sobel for edges if no edge_mask
-    magnitude = None
-    angle = None
-    if edge_mask is None:
-        gray = cv2.cvtColor(np.array(image), cv2.COLOR_RGB2GRAY).astype(np.float64) / 255.0
-        sobel_x = cv2.Sobel(gray, cv2.CV_64F, 1, 0, ksize=3)
-        sobel_y = cv2.Sobel(gray, cv2.CV_64F, 0, 1, ksize=3)
-        magnitude = np.sqrt(sobel_x**2 + sobel_y**2)
-        angle = np.arctan2(sobel_y, sobel_x) * 180 / np.pi
 
     for i, char in enumerate(ascii_chars):
         if background_pixels and background_pixels[i] > 0:
@@ -124,37 +120,14 @@ def draw_ascii_art(image, ascii_chars, background_mask=None, edge_mask=None, edg
             color = get_pixel_color(pixel, False, 1.0)
 
         char_to_draw = char
-        if edge_pixels and edge_pixels[i] > 0:
-            direction = edge_pixels[i]
-            if direction == 1:
-                char_to_draw = '\\'
-            elif direction == 2:
-                char_to_draw = '_'
-            elif direction == 3:
-                char_to_draw = '/'
-            else:
-                char_to_draw = '|'
-        elif magnitude is not None and magnitude[y, x] >= edge_threshold:
-            ang = angle[y, x]
-            if (22.5 <= ang <= 67.5) or (-157.5 <= ang <= -112.5):
-                char_to_draw = '\\'
-            elif (67.5 <= ang <= 112.5) or (-112.5 <= ang <= -67.5):
-                char_to_draw = '_'
-            elif (112.5 <= ang <= 157.5) or (-67.5 <= ang <= -22.5):
-                char_to_draw = '/'
-            else:
-                char_to_draw = '|'
 
         draw.text((x * char_width, y * char_height), char_to_draw, font=font, fill=color)
 
     return output_image
 
-def print_ascii_art(image, edge_threshold=4.0, use_retro=False, use_bw=False, gamma=1.0):
-    """Print ASCII art to terminal with color and edges."""
+def print_ascii_art(image, use_retro=False, use_bw=False, gamma=1.0):
+    """Print ASCII art to terminal with color."""
     width, height = image.size
-    gray = cv2.cvtColor(np.array(image), cv2.COLOR_RGB2GRAY).astype(np.float64) / 255.0
-    sobel_x = cv2.Sobel(gray, cv2.CV_64F, 1, 0, ksize=3)
-    sobel_y = cv2.Sobel(gray, cv2.CV_64F, 0, 1, ksize=3)
 
     for y in range(height):
         for x in range(width):
@@ -183,18 +156,6 @@ def print_ascii_art(image, edge_threshold=4.0, use_retro=False, use_bw=False, ga
 
             index = int(gray_val * (len(ASCII_CHARS) - 1))
             char = ASCII_CHARS[min(index, len(ASCII_CHARS)-1)]
-
-            mag = np.sqrt(sobel_x[y, x]**2 + sobel_y[y, x]**2)
-            if mag >= edge_threshold:
-                ang = np.arctan2(sobel_y[y, x], sobel_x[y, x]) * 180 / np.pi
-                if (22.5 <= ang <= 67.5) or (-157.5 <= ang <= -112.5):
-                    char = '\\'
-                elif (67.5 <= ang <= 112.5) or (-112.5 <= ang <= -67.5):
-                    char = '_'
-                elif (112.5 <= ang <= 157.5) or (-67.5 <= ang <= -22.5):
-                    char = '/'
-                else:
-                    char = '|'
 
             print(f"\x1b[38;2;{r};{g};{b}m{char}", end='')
         print()

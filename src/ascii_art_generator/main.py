@@ -14,25 +14,20 @@ def main():
     parser.add_argument("-w", "--width", type=int, default=120, help="The desired width of the output image in characters.")
     parser.add_argument("-m", "--minimalistic", action="store_true", help="Enable minimalistic mode for subject isolation.")
     parser.add_argument("--bg-removal-method", choices=["simple", "ml"], default="ml", help="The method for background removal in minimalistic mode.")
-    parser.add_argument("--dilation-kernel-size", type=int, default=3, help="The kernel size for dilation in background removal.")
+    parser.add_argument("--ml-model", choices=["u2net", "u2netp", "u2net_human_seg", "u2net_cloth_seg", "silueta", "isnet-general-use", "isnet-anime", "sam", "birefnet-general", "birefnet-general-lite", "birefnet-portrait", "birefnet-dis", "birefnet-hrsod", "birefnet-cod", "birefnet-massive"], default="u2net", help="The ML model to use for background removal.")
+    parser.add_argument("--dilation-kernel-size", type=int, default=1, help="The kernel size for dilation in background removal.")
     parser.add_argument("--blur-kernel-size", type=int, default=5, help="The kernel size for Gaussian blur on the subject mask.")
-    parser.add_argument("--edge-threshold", type=float, default=4.0, help="The threshold for edge detection.")
     parser.add_argument("--retro", action="store_true", help="Use retro color mode.")
     parser.add_argument("--bw", action="store_true", help="Use black and white mode.")
     parser.add_argument("--gamma", type=float, default=1.0, help="Gamma correction value for colors.")
     parser.add_argument("--brightness", type=float, default=1.0, help="Brightness adjustment factor.")
-    parser.add_argument("--contrast", type=float, default=1.0, help="Contrast adjustment factor.")
-    parser.add_argument("--character-ratio", type=float, default=2.0, help="Height-to-width ratio for characters.")
-    parser.add_argument("--max-height", type=int, default=48, help="Maximum height in characters.")
+    parser.add_argument("--contrast", type=float, default=1.0, help="Contrast adjustment factor. ")
+    parser.add_argument("--character-ratio", type=float, default=2.0, help="Height-to-width ratio for characters. Only for terminal output.")
+    parser.add_argument("--max-height", type=int, default=48, help="Maximum height in characters. Only for terminal output.")
 
     args = parser.parse_args()
 
     import os
-    # Fix for PowerShell argument parsing where .\path becomes .path
-    if args.input_path.startswith('.') and not args.input_path.startswith('.\\') and not args.input_path.startswith('./'):
-        args.input_path = '.\\' + args.input_path[1:]
-    if args.output_path and args.output_path.startswith('.') and not args.output_path.startswith('.\\') and not args.output_path.startswith('./'):
-        args.output_path = '.\\' + args.output_path[1:]
 
     args.input_path = os.path.abspath(args.input_path)
     if args.output_path:
@@ -51,25 +46,23 @@ def main():
     if args.output_path is None:
         # Terminal output
         resized_image = conversion.resize_image(image, args.width, args.character_ratio)
-        conversion.print_ascii_art(resized_image, args.edge_threshold, args.retro, args.bw, args.gamma)
+        conversion.print_ascii_art(resized_image, args.retro, args.bw, args.gamma)
     else:
         # Image output
-        resized_image = conversion.resize_image(image, args.width, 1.0)
+        resized_image = conversion.resize_image(image, args.width, conversion.get_character_ratio())
         ascii_chars = conversion.image_to_ascii_chars(resized_image)
 
         if args.minimalistic:
             if args.bg_removal_method == "simple":
                 background_mask = minimalistic.create_background_mask(resized_image)
-                edge_mask = minimalistic.emphasize_edges(resized_image, background_mask, args.blur_kernel_size, args.edge_threshold)
-                output_image = conversion.draw_ascii_art(resized_image, ascii_chars, background_mask, edge_mask, args.edge_threshold, args.retro, args.bw, args.gamma)
+                output_image = conversion.draw_ascii_art(resized_image, ascii_chars, background_mask, args.retro, args.bw, args.gamma)
             else:
-                removed_bg_image = minimalistic.remove_background_ml(resized_image)
+                removed_bg_image = minimalistic.remove_background_ml(resized_image, args.ml_model)
                 background_mask = Image.fromarray((np.array(removed_bg_image.split()[-1]) == 0).astype(np.uint8) * 255)
                 refined_background_mask = minimalistic.refine_mask(background_mask, args.dilation_kernel_size)
-                edge_mask = minimalistic.emphasize_edges(resized_image, refined_background_mask, args.blur_kernel_size, args.edge_threshold)
-                output_image = conversion.draw_ascii_art(resized_image, ascii_chars, refined_background_mask, edge_mask, args.edge_threshold, args.retro, args.bw, args.gamma)
+                output_image = conversion.draw_ascii_art(resized_image, ascii_chars, refined_background_mask, args.retro, args.bw, args.gamma)
         else:
-            output_image = conversion.draw_ascii_art(resized_image, ascii_chars, edge_threshold=args.edge_threshold, use_retro=args.retro, use_bw=args.bw, gamma=args.gamma)
+            output_image = conversion.draw_ascii_art(resized_image, ascii_chars, use_retro=args.retro, use_bw=args.bw, gamma=args.gamma)
 
         try:
             output_image.save(args.output_path)
