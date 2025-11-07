@@ -19,3 +19,6 @@ venv/
 .gemini/
 *.png
 GEMINI.md
+*.egg-info/
+dist/
+build/
