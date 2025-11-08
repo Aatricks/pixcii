@@ -1,4 +1,4 @@
-# ASCII Art Generator
+# Pyscii
 
 A powerful command-line tool to convert images into high-quality, colorized ASCII art. Transform your photos into stylized text-based representations with options for standard conversion, minimalistic "sticker" effects, and various customization settings.
 
@@ -43,7 +43,7 @@ A powerful command-line tool to convert images into high-quality, colorized ASCI
 
 3. **Install dependencies**:
    ```bash
-   pip install -e .
+   pip install .
    ```
 
 This installs the `pyscii` command globally in your environment.
