@@ -4,10 +4,11 @@ version = "0.1.0"
 dependencies = [
     "Pillow",
     "numpy",
-    "opencv-python",
-    "rembg",
+    "opencv-python-headless",
+    "rembg>=2.0.50",
     "onnxruntime",
     "tqdm",
+    "numba>=0.59.0",
 ]
 
 [project.scripts]
