@@ -3,7 +3,7 @@ import colorsys
 from PIL import Image, ImageDraw, ImageEnhance, ImageFont
 from tqdm import tqdm
 
-ASCII_CHARS = " .-=+*x#$&X@"
+ASCII_CHARS = " `.:-,';_~/\\\"^><i=!*r+I)(lj?t1}{vf7z|LJcx[]TsYyoFa2#nuZVek3XC4A5PhESU0bpdqK69HORwG8D&gmQ%B$NWM@"
 
 def get_character_ratio():
     font_size = 10
