@@ -1,4 +1,4 @@
-# Pyscii
+# Pixcii
 
 A powerful command-line tool to convert images into high-quality, colorized ASCII art. Transform your photos into stylized text-based representations with options for standard conversion, minimalistic "sticker" effects, and various customization settings.
 
