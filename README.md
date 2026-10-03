@@ -4,8 +4,11 @@ A powerful command-line tool to convert images into high-quality, colorized ASCI
 
 ## Features
 
-- **High-Quality Conversion**: Uses a dense set of ASCII characters to represent different brightness levels, preserving image detail.
-- **Color Preservation**: Accurately applies original colors and gradients to ASCII characters.
+- **High-Quality Conversion**: Characters are ranked by how much ink they really have in the rendering font, so brightness maps cleanly onto a smooth ramp.
+- **Outlines**: Strong edges are drawn with line characters (`- | / \`), so shapes stay readable.
+- **Tone Mapping**: Contrast-limited histogram equalization brings out detail in dark or bright areas.
+- **Light or Dark Paper**: Mostly-light pictures are drawn as dark ink on light paper, others as light ink on black.
+- **Color Preservation**: Each character keeps the hue of its spot in the picture. `--tint` can also fill the background with color.
 - **Minimalistic Mode**: Isolates subjects against black backgrounds with edge enhancement, supporting both simple color-based and advanced ML-based background removal.
 - **Terminal Output**: Display ASCII art directly in the terminal with color support.
 - **Image Output**: Save ASCII art as image files for sharing or further use.
@@ -15,13 +18,13 @@ A powerful command-line tool to convert images into high-quality, colorized ASCI
   - Black and white mode.
   - Gamma, brightness, and contrast adjustments.
   - Multiple ML models for background removal (e.g., U2Net, BiRefNet variants).
-- **Fast Processing**: Optimized for performance with progress bars.
+- **Fast Processing**: Fully vectorized with NumPy; a 4K picture converts in well under a second.
 
 ## Installation
 
 ### Prerequisites
 
-- Python 3.11 or later
+- Python 3.12 or later
 - pip for package management
 
 ### Steps
@@ -57,7 +60,7 @@ pixcii [OPTIONS] INPUT_PATH [OUTPUT_PATH]
 ```
 
 - `INPUT_PATH`: Path to the input image (PNG, JPG, etc.).
-- `OUTPUT_PATH`: (Optional) Path to save the output image. If omitted, ASCII art is printed to the terminal.
+- `OUTPUT_PATH`: (Optional) Path to save the output image. If omitted, ASCII art is printed to the terminal, sized to fit the window.
 
 ### Examples
 
@@ -96,7 +99,15 @@ pixcii input.png output.png --minimalistic --bg-removal-method ml
 Control detail level by setting character width:
 
 ```bash
-pixcii input.png output.png --width 200
+pixcii input.png output.png --width 300 --font-size 16
+```
+
+#### Colored Background
+
+Fill each character's background with the picture's color, for a more vivid result:
+
+```bash
+pixcii input.png output.png --tint 0.3
 ```
 
 #### Retro Style
@@ -127,10 +138,12 @@ pixcii input.png output.png --gamma 1.2 --brightness 1.1 --contrast 0.9
 
 - `--bg-removal-method {simple,ml}`: Background removal method (default: ml).
 - `--ml-model MODEL`: ML model for background removal (default: u2net). Options include u2net, birefnet-general, etc.
-- `--dilation-kernel-size SIZE`: Kernel size for edge dilation in minimalistic mode (default: 1).
-- `--blur-kernel-size SIZE`: Kernel size for mask blurring (default: 5).
+- `--dilation-kernel-size SIZE`: Grow the removed background by this many characters in minimalistic mode (default: 1).
+- `--font-size SIZE`: Font size in pixels for image output (default: 12).
+- `--background {auto,dark,light}`: Canvas color for image output (default: auto).
+- `--tint STRENGTH`: Fill character backgrounds with the picture's color, 0 to 1 (default: 0).
+- `--edge-threshold VALUE`: Edge strength for line characters; 0 turns outlines off (default: 0.5).
 - `--character-ratio RATIO`: Height-to-width ratio for terminal output (default: 2.0).
-- `--max-height HEIGHT`: Maximum height in characters for terminal output (default: 48).
 
 For a full list of options, run:
 
@@ -147,14 +160,7 @@ pixcii --help
 Run the test suite with:
 
 ```bash
-cd src
-pytest
-```
-
-Or use the project's linting and testing command:
-
-```bash
-cd src; pytest; ruff check .
+uv run pytest
 ```
 
 ## Contributing
@@ -167,8 +173,6 @@ Contributions are welcome! Please follow these steps:
 4. Ensure all tests pass and code follows style guidelines (use `ruff`).
 5. Submit a pull request with a clear description.
 
-Refer to the `specs/` directory for detailed feature plans and requirements.
-
 ## License
 
 This project is licensed under the Apache License 2.0. See the [LICENSE](LICENSE) file for details.
@@ -180,7 +184,6 @@ This project is licensed under the Apache License 2.0. See the [LICENSE](LICENSE
 - OpenCV-Python: Computer vision utilities
 - rembg: Background removal with ML models
 - onnxruntime: ML model inference
-- tqdm: Progress bars
 
 ## Support
 

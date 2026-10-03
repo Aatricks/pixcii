@@ -1,14 +1,13 @@
 [project]
 name = "pixcii"
 version = "0.1.0"
+requires-python = ">=3.12"
 dependencies = [
     "Pillow",
     "numpy",
     "opencv-python-headless",
     "rembg>=2.0.50",
     "onnxruntime",
-    "tqdm",
-    "numba>=0.59.0",
 ]
 
 [project.scripts]
@@ -19,3 +18,7 @@ dev = [
     "pytest>=9.0.2",
     "pytest-mock>=3.15.1",
 ]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"

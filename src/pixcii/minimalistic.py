@@ -1,7 +1,6 @@
 import cv2
 import numpy as np
 from PIL import Image
-from rembg import new_session, remove
 
 
 def create_background_mask(image: Image.Image, threshold: int = 200) -> Image.Image:
@@ -50,6 +49,7 @@ def remove_background_ml(image: Image.Image, model: str = "u2net") -> Image.Imag
     Returns:
         The image with background removed (RGBA).
     """
-    session = new_session(model)
-    return remove(image, session=session, alpha_matting=True)
+    from rembg import new_session, remove  # heavy import, only needed here
+
+    return remove(image, session=new_session(model))
 
